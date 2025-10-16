@@ -1,3 +1,10 @@
 <Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="TulipAlg.Core/TulipAlg.Core.csproj" />
+  <Project Path="TulipAlg.CoreExtern/TulipAlg.CoreExtern.vcxproj" />
   <Project Path="TulipAlg/TulipAlg.csproj" />
 </Solution>
