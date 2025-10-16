@@ -8,4 +8,9 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TulipAlg.Core3D\TulipAlg.Core3D.csproj" />
+    <ProjectReference Include="..\TulipAlg.Core\TulipAlg.Core.csproj" />
+  </ItemGroup>
+
 </Project>

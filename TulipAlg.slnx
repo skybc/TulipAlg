@@ -6,7 +6,7 @@
   </Configurations>
   <Project Path="TulipAlg.Core/TulipAlg.Core.csproj" />
   <Project Path="TulipAlg.Core3D/TulipAlg.Core3D.csproj" />
-  <Project Path="TulipAlg.Core3DExtern/TulipAlg.Core3DExtern.vcxproj" />
-  <Project Path="TulipAlg.CoreExtern/TulipAlg.CoreExtern.vcxproj" />
+  <Project Path="TulipAlg.Core3DExtern/TulipAlg.Core3DExtern.vcxproj" Id="a86f0b5c-bccf-4146-b865-5851c791e4b6" />
+  <Project Path="TulipAlg.CoreExtern/TulipAlg.CoreExtern.vcxproj" Id="8c90888f-3e6f-49c6-9c66-62140519ef15" />
   <Project Path="TulipAlg/TulipAlg.csproj" />
 </Solution>

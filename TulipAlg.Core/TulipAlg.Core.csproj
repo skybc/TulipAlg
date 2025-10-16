@@ -8,6 +8,7 @@
 		<InvariantGlobalization>true</InvariantGlobalization>
 		<StripSymbols>true</StripSymbols>
 		<IlcOptimizationPreference>Speed</IlcOptimizationPreference>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="OpenCvSharp4" Version="4.11.0.20250507" />
