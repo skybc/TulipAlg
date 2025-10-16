@@ -5,6 +5,8 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="TulipAlg.Core/TulipAlg.Core.csproj" />
+  <Project Path="TulipAlg.Core3D/TulipAlg.Core3D.csproj" />
+  <Project Path="TulipAlg.Core3DExtern/TulipAlg.Core3DExtern.vcxproj" />
   <Project Path="TulipAlg.CoreExtern/TulipAlg.CoreExtern.vcxproj" />
   <Project Path="TulipAlg/TulipAlg.csproj" />
 </Solution>
