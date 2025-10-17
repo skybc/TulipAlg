@@ -7,7 +7,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
-
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+		<PackageReference Include="ScottPlot.WPF" Version="5.0.47" />
+	</ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TulipAlg.Core3D\TulipAlg.Core3D.csproj" />
     <ProjectReference Include="..\TulipAlg.Core\TulipAlg.Core.csproj" />

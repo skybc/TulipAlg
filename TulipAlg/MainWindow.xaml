@@ -4,9 +4,59 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TulipAlg"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="TulipAlg - 几何算法验证平台" Height="700" Width="1200">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
+        <!-- 左侧菜单区域 -->
+        <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="0,0,1,0" Background="#F5F5F5">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="功能菜单" FontSize="16" FontWeight="Bold" 
+                          Margin="10" HorizontalAlignment="Center"/>
+                <TreeView ItemsSource="{Binding MenuItems}" BorderThickness="0" Background="Transparent">
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="TreeViewItem">
+                            <Setter Property="IsExpanded" Value="True"/>
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                            <TextBlock Text="{Binding Header}" Padding="5">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftClick" 
+                                                Command="{Binding DataContext.MenuItemSelectedCommand, 
+                                                RelativeSource={RelativeSource AncestorType=TreeView}}"
+                                                CommandParameter="{Binding}"/>
+                                </TextBlock.InputBindings>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontSize" Value="14"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsLeaf}" Value="True">
+                                                <Setter Property="Foreground" Value="#0066CC"/>
+                                                <Setter Property="Cursor" Value="Hand"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsLeaf}" Value="False">
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </DockPanel>
+        </Border>
+
+        <!-- 右侧内容区域 -->
+        <Border Grid.Column="1" Background="White">
+            <ContentControl Content="{Binding CurrentView}"/>
+        </Border>
     </Grid>
 </Window>

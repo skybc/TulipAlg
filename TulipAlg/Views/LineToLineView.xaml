@@ -1,0 +1,83 @@
+<UserControl x:Class="TulipAlg.Views.LineToLineView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:scottplot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="线-线 几何运算" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                <GroupBox Header="线1" Margin="0,0,0,10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="起点X:" Width="60"/>
+                            <TextBox Text="{Binding Line1StartX}" Width="80"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="起点Y:" Width="60"/>
+                            <TextBox Text="{Binding Line1StartY}" Width="80"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="终点X:" Width="60"/>
+                            <TextBox Text="{Binding Line1EndX}" Width="80"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="终点Y:" Width="60"/>
+                            <TextBox Text="{Binding Line1EndY}" Width="80"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="线2" Margin="0,0,0,10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="起点X:" Width="60"/>
+                            <TextBox Text="{Binding Line2StartX}" Width="80"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="起点Y:" Width="60"/>
+                            <TextBox Text="{Binding Line2StartY}" Width="80"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="终点X:" Width="60"/>
+                            <TextBox Text="{Binding Line2EndX}" Width="80"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="终点Y:" Width="60"/>
+                            <TextBox Text="{Binding Line2EndY}" Width="80"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="运算" Margin="0,0,0,10">
+                    <StackPanel>
+                        <Button Content="判断平行" Command="{Binding CheckParallelCommand}" Margin="0,5"/>
+                        <TextBlock Text="{Binding ParallelResult}" Foreground="Blue" Margin="0,5"/>
+                        
+                        <Button Content="判断垂直" Command="{Binding CheckPerpendicularCommand}" Margin="0,5"/>
+                        <TextBlock Text="{Binding PerpendicularResult}" Foreground="Blue" Margin="0,5"/>
+                        
+                        <Button Content="计算交点" Command="{Binding CalculateIntersectionCommand}" Margin="0,5"/>
+                        <TextBlock Text="{Binding IntersectionResult}" Foreground="Blue" Margin="0,5"/>
+                        
+                        <Button Content="计算夹角" Command="{Binding CalculateAngleCommand}" Margin="0,5"/>
+                        <TextBlock Text="{Binding AngleResult}" Foreground="Blue" Margin="0,5"/>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1" Margin="10,0,0,0">
+            <scottplot:WpfPlot x:Name="WpfPlot1" />
+        </Border>
+    </Grid>
+</UserControl>

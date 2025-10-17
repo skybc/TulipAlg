@@ -1,0 +1,97 @@
+<UserControl x:Class="TulipAlg.Views.PointToPointView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TulipAlg.Views"
+             xmlns:scottplot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 左侧参数输入区 -->
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="点-点 几何运算" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                <!-- 点坐标 -->
+                <GroupBox Header="点坐标" Margin="0,0,0,10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="X:" Width="30" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding PointX, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="Y:" Width="30" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding PointY, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- 平移 -->
+                <GroupBox Header="1. 点平移" Margin="0,0,0,10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="dx:" Width="30" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding Dx, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="dy:" Width="30" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding Dy, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        </StackPanel>
+                        <Button Content="计算平移" Command="{Binding CalculateTranslateCommand}" Margin="0,5"/>
+                        <TextBlock Text="{Binding TranslateResult}" TextWrapping="Wrap" Foreground="Blue" Margin="0,5"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- 旋转 -->
+                <GroupBox Header="2. 点旋转" Margin="0,0,0,10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="中心X:" Width="60" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding CenterX, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="中心Y:" Width="60" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding CenterY, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="角度:" Width="60" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding AngleDegrees, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        </StackPanel>
+                        <Button Content="计算旋转" Command="{Binding CalculateRotateCommand}" Margin="0,5"/>
+                        <TextBlock Text="{Binding RotateResult}" TextWrapping="Wrap" Foreground="Blue" Margin="0,5"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- 距离和中点 -->
+                <GroupBox Header="3. 两点运算" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="第二个点:" FontWeight="Bold" Margin="0,5"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="X:" Width="30" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding Point2X, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="Y:" Width="30" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding Point2Y, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        </StackPanel>
+                        <Button Content="计算距离" Command="{Binding CalculateDistanceCommand}" Margin="0,5"/>
+                        <TextBlock Text="{Binding DistanceResult}" TextWrapping="Wrap" Foreground="Blue" Margin="0,5"/>
+                        <Button Content="计算中点" Command="{Binding CalculateMidPointCommand}" Margin="0,5"/>
+                        <TextBlock Text="{Binding MidPointResult}" TextWrapping="Wrap" Foreground="Blue" Margin="0,5"/>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 右侧可视化区域 -->
+        <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1" Margin="10,0,0,0">
+            <scottplot:WpfPlot x:Name="WpfPlot1" />
+        </Border>
+    </Grid>
+</UserControl>

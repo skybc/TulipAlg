@@ -1,0 +1,69 @@
+<UserControl x:Class="TulipAlg.Views.CircleToCircleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:scottplot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="圆-圆 几何运算" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                <GroupBox Header="圆1" Margin="0,0,0,10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="圆心X:" Width="60"/>
+                            <TextBox Text="{Binding Circle1CenterX}" Width="80"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="圆心Y:" Width="60"/>
+                            <TextBox Text="{Binding Circle1CenterY}" Width="80"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="半径:" Width="60"/>
+                            <TextBox Text="{Binding Circle1Radius}" Width="80"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="圆2" Margin="0,0,0,10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="圆心X:" Width="60"/>
+                            <TextBox Text="{Binding Circle2CenterX}" Width="80"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="圆心Y:" Width="60"/>
+                            <TextBox Text="{Binding Circle2CenterY}" Width="80"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <TextBlock Text="半径:" Width="60"/>
+                            <TextBox Text="{Binding Circle2Radius}" Width="80"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="运算" Margin="0,0,0,10">
+                    <StackPanel>
+                        <Button Content="计算交点" Command="{Binding CalculateIntersectionPointsCommand}" Margin="0,5"/>
+                        <TextBlock Text="{Binding IntersectionPointsResult}" TextWrapping="Wrap" Foreground="Blue" Margin="0,5"/>
+                        
+                        <Button Content="计算距离" Command="{Binding CalculateDistanceCommand}" Margin="0,5"/>
+                        <TextBlock Text="{Binding DistanceResult}" TextWrapping="Wrap" Foreground="Blue" Margin="0,5"/>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1" Margin="10,0,0,0">
+            <scottplot:WpfPlot x:Name="WpfPlot1" />
+        </Border>
+    </Grid>
+</UserControl>
