@@ -41,6 +41,8 @@ namespace TulipAlg
             services.AddTransient<PointToCircleViewModel>();
             services.AddTransient<CircleToCircleViewModel>();
             services.AddTransient<PointToRegionViewModel>();
+            services.AddTransient<CannyEdgeDetectorViewModel>();
+            services.AddTransient<OpenCvCannyViewModel>();
 
             // 注册 Views
             services.AddTransient<PointToPointView>();
@@ -50,6 +52,8 @@ namespace TulipAlg
             services.AddTransient<PointToCircleView>();
             services.AddTransient<CircleToCircleView>();
             services.AddTransient<PointToRegionView>();
+            services.AddTransient<CannyEdgeDetectorView>();
+            services.AddTransient<OpenCvCannyView>();
 
             // 注册 MainWindow
             services.AddSingleton<MainWindow>();

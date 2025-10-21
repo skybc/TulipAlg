@@ -52,7 +52,18 @@ namespace TulipAlg.ViewModels
                 }
             };
 
+            var imageProcessingMenu = new MenuItem
+            {
+                Header = "图像处理",
+                Children = new ObservableCollection<MenuItem>
+                {
+                    new MenuItem { Header = "Canny亚像素边缘检测", ViewType = typeof(CannyEdgeDetectorView) },
+                    new MenuItem { Header = "OpenCV Canny边缘检测", ViewType = typeof(OpenCvCannyView) }
+                }
+            };
+
             MenuItems.Add(generalMenu);
+            MenuItems.Add(imageProcessingMenu);
         }
 
         [RelayCommand]
