@@ -4,32 +4,32 @@ using System.Runtime.InteropServices;
 
 namespace TulipAlg.Core
 {
-    /// <summary>
-    /// 边缘点结构
-    /// </summary>
-    public struct EdgePoint
-    {
-        /// <summary>
-        /// X坐标（亚像素精度）
-        /// </summary>
-        public double X { get; set; }
+    ///// <summary>
+    ///// 边缘点结构
+    ///// </summary>
+    //public struct EdgePoint
+    //{
+    //    /// <summary>
+    //    /// X坐标（亚像素精度）
+    //    /// </summary>
+    //    public double X { get; set; }
 
-        /// <summary>
-        /// Y坐标（亚像素精度）
-        /// </summary>
-        public double Y { get; set; }
+    //    /// <summary>
+    //    /// Y坐标（亚像素精度）
+    //    /// </summary>
+    //    public double Y { get; set; }
 
-        public EdgePoint(double x, double y)
-        {
-            X = x;
-            Y = y;
-        }
+    //    public EdgePoint(double x, double y)
+    //    {
+    //        X = x;
+    //        Y = y;
+    //    }
 
-        public override string ToString()
-        {
-            return $"({X:F3}, {Y:F3})";
-        }
-    }
+    //    public override string ToString()
+    //    {
+    //        return $"({X:F3}, {Y:F3})";
+    //    }
+    //}
 
     /// <summary>
     /// 边缘曲线结构
@@ -39,7 +39,7 @@ namespace TulipAlg.Core
         /// <summary>
         /// 边缘点列表
         /// </summary>
-        public List<EdgePoint> Points { get; set; } = new List<EdgePoint>();
+        public List<PointD> Points { get; set; } = new List<PointD>();
 
         /// <summary>
         /// 是否为闭合曲线
@@ -102,9 +102,9 @@ namespace TulipAlg.Core
         /// <summary>
         /// 获取所有边缘点（展平的列表）
         /// </summary>
-        public List<EdgePoint> GetAllPoints()
+        public List<PointD> GetAllPoints()
         {
-            var allPoints = new List<EdgePoint>();
+            var allPoints = new List<PointD>();
             foreach (var curve in Curves)
             {
                 allPoints.AddRange(curve.Points);
@@ -164,7 +164,7 @@ namespace TulipAlg.Core
         [DllImport("TulipAlg.CoreExtern.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool CannySubPixelEdge_DetectEdgesFromBytes(
             IntPtr instance,
-            byte[] image,
+            IntPtr image,
             int width,
             int height,
             double sigma,
@@ -195,7 +195,7 @@ namespace TulipAlg.Core
             _nativeInstance = CannySubPixelEdge_Create();
             if (_nativeInstance == IntPtr.Zero)
             {
-                throw new Exception("Failed to create CannySubPixelEdge native instance");
+                throw new Exception("创建 CannySubPixelEdge 本地实例失败");
             }
         }
 
@@ -216,7 +216,7 @@ namespace TulipAlg.Core
                 throw new ObjectDisposedException(nameof(CannySubPixelEdge));
 
             if (image == null || image.Length != width * height)
-                throw new ArgumentException("Invalid image data");
+                throw new ArgumentException("图像数据无效");
 
             IntPtr x_ptr = IntPtr.Zero;
             IntPtr y_ptr = IntPtr.Zero;
@@ -232,7 +232,7 @@ namespace TulipAlg.Core
                 if (!success)
                 {
                     string? error = GetLastError();
-                    throw new Exception($"Edge detection failed: {error}");
+                    throw new Exception($"边缘检测失败：{error}");
                 }
 
                 return ParseResult(x_ptr, y_ptr, curve_limits_ptr, totalPoints, curveCount, width, height);
@@ -256,14 +256,14 @@ namespace TulipAlg.Core
         /// <param name="th_h">Canny高阈值</param>
         /// <param name="th_l">Canny低阈值</param>
         /// <returns>边缘检测结果</returns>
-        public CannyEdgeResult? DetectEdgesFromBytes(byte[] image, int width, int height,
+        public CannyEdgeResult? DetectEdgesFromBytes(Span<byte> image, int width, int height,
                                                      double sigma, double th_h, double th_l)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(CannySubPixelEdge));
 
             if (image == null || image.Length != width * height)
-                throw new ArgumentException("Invalid image data");
+                throw new ArgumentException("图像数据无效");
 
             IntPtr x_ptr = IntPtr.Zero;
             IntPtr y_ptr = IntPtr.Zero;
@@ -271,18 +271,24 @@ namespace TulipAlg.Core
 
             try
             {
-                bool success = CannySubPixelEdge_DetectEdgesFromBytes(
-                    _nativeInstance, image, width, height, sigma, th_h, th_l,
-                    out x_ptr, out y_ptr, out curve_limits_ptr,
-                    out int totalPoints, out int curveCount);
-
-                if (!success)
+                unsafe
                 {
-                    string? error = GetLastError();
-                    throw new Exception($"Edge detection failed: {error}");
-                }
+                    fixed (byte* imagePtr = image)
+                    {
+                        bool success = CannySubPixelEdge_DetectEdgesFromBytes(
+                            _nativeInstance, (IntPtr)imagePtr, width, height, sigma, th_h, th_l,
+                            out x_ptr, out y_ptr, out curve_limits_ptr,
+                            out int totalPoints, out int curveCount);
 
-                return ParseResult(x_ptr, y_ptr, curve_limits_ptr, totalPoints, curveCount, width, height);
+                        if (!success)
+                        {
+                            string? error = GetLastError();
+                            throw new Exception($"边缘检测失败：{error}");
+                        }
+
+                        return ParseResult(x_ptr, y_ptr, curve_limits_ptr, totalPoints, curveCount, width, height);
+                    }
+                }
             }
             finally
             {
@@ -341,7 +347,7 @@ namespace TulipAlg.Core
 
                 for (int i = start; i < end; i++)
                 {
-                    curve.Points.Add(new EdgePoint(x_array[i], y_array[i]));
+                    curve.Points.Add(new PointD(x_array[i], y_array[i]));
                 }
 
                 // 检查是否为闭合曲线

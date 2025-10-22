@@ -1,6 +1,9 @@
-﻿using System;
+﻿using OpenCvSharp;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -349,6 +352,52 @@ namespace TulipAlg.Core
             double distToEnd = Distance(point, line.End);
             double lineLength = Distance(line.Start, line.End);
             return Math.Abs((distToStart + distToEnd) - lineLength) < tolerance;
+        }
+
+
+        // 最小二乘拟合
+        /// <summary>
+        /// 最小二乘拟合
+        /// </summary>
+        public static LineD FitLineToPoints(List<PointD> points)
+        {
+            if (points == null || points.Count < 2)
+                throw new ArgumentException("至少需要两个点来拟合直线。");
+
+            int n = points.Count;
+            double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+
+            double minX = double.MaxValue, maxX = double.MinValue;
+            double minY = double.MaxValue, maxY = double.MinValue;
+
+            foreach (var p in points)
+            {
+                sumX += p.X;
+                sumY += p.Y;
+                sumXY += p.X * p.Y;
+                sumX2 += p.X * p.X;
+                if (p.X < minX) minX = p.X;
+                if (p.X > maxX) maxX = p.X;
+                if (p.Y < minY) minY = p.Y;
+                if (p.Y > maxY) maxY = p.Y;
+            }
+
+            double denominator = n * sumX2 - sumX * sumX;
+
+            // 处理垂直线情况
+            if (Math.Abs(denominator) < 1e-12)
+            {
+                double xMean = sumX / n;
+                return new LineD(new PointD(xMean, minY), new PointD(xMean, maxY));
+            }
+
+            double slope = (n * sumXY - sumX * sumY) / denominator;
+            double intercept = (sumY - slope * sumX) / n;
+
+            PointD startPoint = new PointD(minX, slope * minX + intercept);
+            PointD endPoint = new PointD(maxX, slope * maxX + intercept);
+
+            return new LineD(startPoint, endPoint);
         }
 
         #endregion
@@ -945,5 +994,50 @@ namespace TulipAlg.Core
         }
 
         #endregion
+
+        //IsAngleInRange
+        public static bool IsAngleInRange(double angle, double startAngle, double endAngle)
+        {
+            angle = NormalizeAngle(angle);
+            startAngle = NormalizeAngle(startAngle);
+            endAngle = NormalizeAngle(endAngle);
+            if (startAngle <= endAngle)
+            {
+                return angle >= startAngle && angle <= endAngle;
+            }
+            else
+            {
+                // 跨越0度的情况
+                return angle >= startAngle || angle <= endAngle;
+            }
+        }
+
+
+        /// <summary>
+        /// 按照参考方向（与线条近似垂直）进行排序
+        /// </summary>
+        public static List<LineD> SortByDirection(List<LineD> lines, PointD refDir)
+        {
+            // 归一化参考方向
+            float len = (float)Math.Sqrt(refDir.X * refDir.X + refDir.Y * refDir.Y);
+            var dir = new PointD(refDir.X / len, refDir.Y / len);
+
+            // 计算每条线与参考方向的夹角，用于验证是否接近垂直
+            foreach (var line in lines)
+            {
+                var ldir = line.GetDirection();
+                float llen = (float)Math.Sqrt(ldir.X * ldir.X + ldir.Y * ldir.Y);
+                ldir = new Vector2(ldir.X / llen, ldir.Y / llen);
+
+                //float angleDeg = Math.Abs((float)(Math.Acos(ldir.X * dir.X + ldir.Y * dir.Y) * 180.0 / Math.PI) - 90f);
+                //if (angleDeg > 15f)
+                //    Console.WriteLine($"⚠️ 警告: 某条线与方向偏离超过15° (偏差={angleDeg:F1}°)");
+            }
+
+            // 按参考方向投影排序
+            return lines
+                .OrderBy(l => l.GetMidPoint().X * dir.X + l.GetMidPoint().Y * dir.Y)
+                .ToList();
+        }
     }
 }
