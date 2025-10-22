@@ -3,9 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace TulipAlg.Core
 {
@@ -1027,7 +1028,7 @@ namespace TulipAlg.Core
             {
                 var ldir = line.GetDirection();
                 float llen = (float)Math.Sqrt(ldir.X * ldir.X + ldir.Y * ldir.Y);
-                ldir = new Vector2(ldir.X / llen, ldir.Y / llen);
+                ldir = new System.Numerics.Vector2(ldir.X / llen, ldir.Y / llen);
 
                 //float angleDeg = Math.Abs((float)(Math.Acos(ldir.X * dir.X + ldir.Y * dir.Y) * 180.0 / Math.PI) - 90f);
                 //if (angleDeg > 15f)
@@ -1039,5 +1040,188 @@ namespace TulipAlg.Core
                 .OrderBy(l => l.GetMidPoint().X * dir.X + l.GetMidPoint().Y * dir.Y)
                 .ToList();
         }
+
+        #region 直线拟合
+
+        /// <summary>
+        /// 使用 PCA（主成分分析）方法拟合边缘点集合，返回拟合直线的法线向量
+        /// </summary>
+        /// <param name="edgePoints">边缘点集合</param>
+        /// <returns>拟合直线的单位法线向量（垂直于主方向）</returns>
+        /// <exception cref="ArgumentException">当点集为空或点数少于2时抛出</exception>
+        public static Vector<double> FitLinePCA(List<Point2d> edgePoints)
+        {
+            if (edgePoints == null || edgePoints.Count < 2)
+            {
+                throw new ArgumentException("边缘点集合至少需要2个点");
+            }
+
+            int n = edgePoints.Count;
+
+            // 步骤1: 计算点集的质心（均值）
+            double meanX = 0, meanY = 0;
+            foreach (var pt in edgePoints)
+            {
+                meanX += pt.X;
+                meanY += pt.Y;
+            }
+            meanX /= n;
+            meanY /= n;
+
+            // 步骤2: 将所有点去中心化（减去均值）
+            var centeredPoints = new List<Point2d>(n);
+            foreach (var pt in edgePoints)
+            {
+                centeredPoints.Add(new Point2d(pt.X - meanX, pt.Y - meanY));
+            }
+
+            // 步骤3: 构建数据矩阵（n×2），每行是一个去中心化的点
+            var dataMatrix = DenseMatrix.Create(n, 2, (i, j) =>
+            {
+                return j == 0 ? centeredPoints[i].X : centeredPoints[i].Y;
+            });
+
+            // 步骤4: 计算协方差矩阵（2×2）
+            // Cov = (1/(n-1)) * X^T * X，其中X是去中心化的数据矩阵
+            var covarianceMatrix = (dataMatrix.Transpose() * dataMatrix) / (n - 1);
+
+            // 步骤5: 对协方差矩阵进行特征值分解
+            var evd = covarianceMatrix.Evd();
+            var eigenValues = evd.EigenValues;
+            var eigenVectors = evd.EigenVectors;
+
+            // 步骤6: 找到最大特征值对应的特征向量（主方向）
+            int maxIndex = 0;
+            double maxEigenValue = eigenValues[0].Real;
+            for (int i = 1; i < eigenValues.Count; i++)
+            {
+                if (eigenValues[i].Real > maxEigenValue)
+                {
+                    maxEigenValue = eigenValues[i].Real;
+                    maxIndex = i;
+                }
+            }
+
+            // 步骤7: 获取主方向向量
+            var principalDirection = Vector<double>.Build.Dense(2);
+            principalDirection[0] = eigenVectors[0, maxIndex];
+            principalDirection[1] = eigenVectors[1, maxIndex];
+
+            // 步骤8: 计算法线向量（垂直于主方向）
+            // 如果主方向是 (dx, dy)，则法线是 (-dy, dx) 或 (dy, -dx)
+            var normalVector = Vector<double>.Build.Dense(2);
+            normalVector[0] = -principalDirection[1];
+            normalVector[1] = principalDirection[0];
+
+            // 步骤9: 归一化法线向量为单位向量
+            double norm = Math.Sqrt(normalVector[0] * normalVector[0] + normalVector[1] * normalVector[1]);
+            if (norm > 1e-10)
+            {
+                normalVector = normalVector / norm;
+            }
+
+            return normalVector;
+        }
+
+        /// <summary>
+        /// 使用 RANSAC（随机采样一致性）方法拟合边缘点集合，返回拟合直线的法线向量
+        /// </summary>
+        /// <param name="edgePoints">边缘点集合</param>
+        /// <param name="maxIterations">最大迭代次数，默认1000</param>
+        /// <param name="distanceThreshold">内点距离阈值，默认2.0</param>
+        /// <returns>拟合直线的单位法线向量</returns>
+        /// <exception cref="ArgumentException">当点集为空或点数少于2时抛出</exception>
+        public static Vector<double> FitLineRANSAC(List<Point2d> edgePoints, int maxIterations = 1000, double distanceThreshold = 2.0)
+        {
+            if (edgePoints == null || edgePoints.Count < 2)
+            {
+                throw new ArgumentException("边缘点集合至少需要2个点");
+            }
+
+            int n = edgePoints.Count;
+            Random random = new Random();
+
+            int bestInlierCount = 0;
+            double bestA = 0, bestB = 0, bestC = 0;
+
+            // 步骤1: 迭代多次，每次随机选择两个点拟合直线
+            for (int iter = 0; iter < maxIterations; iter++)
+            {
+                // 步骤2: 随机选择两个不同的点
+                int idx1 = random.Next(n);
+                int idx2 = random.Next(n);
+                while (idx2 == idx1)
+                {
+                    idx2 = random.Next(n);
+                }
+
+                Point2d p1 = edgePoints[idx1];
+                Point2d p2 = edgePoints[idx2];
+
+                // 步骤3: 通过两点计算直线方程 Ax + By + C = 0
+                // 使用点斜式转换为一般式
+                double dx = p2.X - p1.X;
+                double dy = p2.Y - p1.Y;
+
+                // 如果两点重合，跳过
+                double lineLengthSq = dx * dx + dy * dy;
+                if (lineLengthSq < 1e-10)
+                {
+                    continue;
+                }
+
+                // 直线方程: (y - y1) = (dy/dx) * (x - x1)
+                // 转换为一般式: dy*x - dx*y + (dx*y1 - dy*x1) = 0
+                double A = dy;
+                double B = -dx;
+                double C = dx * p1.Y - dy * p1.X;
+
+                // 归一化系数，使得 sqrt(A^2 + B^2) = 1
+                double normFactor = Math.Sqrt(A * A + B * B);
+                A /= normFactor;
+                B /= normFactor;
+                C /= normFactor;
+
+                // 步骤4: 统计内点数量（到直线距离小于阈值的点）
+                int inlierCount = 0;
+                foreach (var pt in edgePoints)
+                {
+                    // 点到直线的距离公式: |Ax + By + C| / sqrt(A^2 + B^2)
+                    // 由于已归一化，分母为1
+                    double distance = Math.Abs(A * pt.X + B * pt.Y + C);
+
+                    if (distance < distanceThreshold)
+                    {
+                        inlierCount++;
+                    }
+                }
+
+                // 步骤5: 如果当前模型的内点数更多，更新最佳模型
+                if (inlierCount > bestInlierCount)
+                {
+                    bestInlierCount = inlierCount;
+                    bestA = A;
+                    bestB = B;
+                    bestC = C;
+                }
+            }
+
+            // 步骤6: 使用最佳模型的直线系数构建法线向量
+            // 直线方程 Ax + By + C = 0 的法线方向就是 (A, B)
+            var normalVector = Vector<double>.Build.Dense(2);
+            normalVector[0] = bestA;
+            normalVector[1] = bestB;
+
+            // 步骤7: 确保法线向量是单位向量（由于已归一化，这一步是冗余的，但为了安全起见）
+            double norm = Math.Sqrt(normalVector[0] * normalVector[0] + normalVector[1] * normalVector[1]);
+            if (norm > 1e-10)
+            {
+                normalVector = normalVector / norm;
+            }
+
+            return normalVector;
+        }
+
+        #endregion
     }
 }
