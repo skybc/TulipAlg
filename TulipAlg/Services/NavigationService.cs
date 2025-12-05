@@ -41,6 +41,21 @@ namespace TulipAlg.Services
             if (view == null)
                 throw new InvalidOperationException($"无法创建类型 {viewType.Name} 的视图");
 
+            // 自动设置 DataContext
+            var viewModelTypeName = viewType.FullName?.Replace("Views", "ViewModels").Replace("View", "ViewModel");
+            if (!string.IsNullOrEmpty(viewModelTypeName))
+            {
+                var viewModelType = Type.GetType(viewModelTypeName);
+                if (viewModelType != null)
+                {
+                    var viewModel = _serviceProvider.GetService(viewModelType);
+                    if (viewModel != null)
+                    {
+                        view.DataContext = viewModel;
+                    }
+                }
+            }
+
             CurrentView = view;
         }
     }

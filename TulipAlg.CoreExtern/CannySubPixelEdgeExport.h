@@ -26,6 +26,7 @@ CANNY_EXPORT void CannySubPixelEdge_Destroy(void* instance);
 CANNY_EXPORT bool CannySubPixelEdge_DetectEdges(
     void* instance,
     const double* image,
+    const unsigned char* mask,
     int width,
     int height,
     double sigma,
@@ -41,6 +42,7 @@ CANNY_EXPORT bool CannySubPixelEdge_DetectEdges(
 CANNY_EXPORT bool CannySubPixelEdge_DetectEdgesFromBytes(
     void* instance,
     const unsigned char* image,
+    const unsigned char* mask,
     int width,
     int height,
     double sigma,

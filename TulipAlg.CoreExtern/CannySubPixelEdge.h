@@ -63,18 +63,20 @@ namespace TulipAlg {
 
         // 执行Canny/Devernay亚像素边缘检测
         // image: 输入图像数据 (double数组，image[x+y*width])
+        // mask: 可选掩膜（unsigned char数组，非0表示该像素参与检测），为 nullptr 时表示不使用掩膜
         // width, height: 图像尺寸
         // sigma: 高斯滤波标准差 (0.0表示不进行滤波)
         // th_h: Canny滞后阈值的高阈值
         // th_l: Canny滞后阈值的低阈值
-        bool DetectEdges(const double* image, int width, int height,
-                        double sigma, double th_h, double th_l,
-                        CannyEdgeResult& result);
+        bool DetectEdges(const double* image, const unsigned char* mask, int width, int height,
+                double sigma, double th_h, double th_l,
+                CannyEdgeResult& result);
 
         // 从字节图像执行边缘检测 (自动转换为double)
-        bool DetectEdgesFromBytes(const unsigned char* image, int width, int height,
-                                 double sigma, double th_h, double th_l,
-                                 CannyEdgeResult& result);
+        // mask: 可选掩膜（unsigned char数组，非0表示该像素参与检测），为 nullptr 时表示不使用掩膜
+        bool DetectEdgesFromBytes(const unsigned char* image, const unsigned char* mask, int width, int height,
+                     double sigma, double th_h, double th_l,
+                     CannyEdgeResult& result);
 
         // 获取最后的错误信息
         const char* GetLastError() const { return m_lastError.c_str(); }
@@ -96,7 +98,7 @@ namespace TulipAlg {
         
         // 边缘点计算
         void ComputeEdgePoints(double* Ex, double* Ey, const double* modG,
-                             const double* Gx, const double* Gy, int X, int Y);
+                             const double* Gx, const double* Gy, int X, int Y,const unsigned char* mask);
         
         // 边缘点链接
         void ChainEdgePoints(int* next, int* prev, const double* Ex, const double* Ey,

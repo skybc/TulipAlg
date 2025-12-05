@@ -1,0 +1,247 @@
+<UserControl x:Class="TulipAlg.Views.DirectionalCannyView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1200">
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 左侧参数输入区 -->
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="方向筛选Canny边缘检测" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                <!-- 图像加载 -->
+                <GroupBox Header="图像加载" Margin="0,0,0,10">
+                    <StackPanel>
+                        <Button Content="加载图像" Command="{Binding LoadImageCommand}" Margin="0,5" Height="30"/>
+                        <Button Content="生成测试图像" Command="{Binding GenerateTestImageCommand}" Margin="0,5" Height="30"/>
+                        <TextBlock Text="{Binding ImageInfo}" TextWrapping="Wrap" Margin="0,5" FontSize="12"/>
+                        
+                        <!-- 显示原始图像的缩略图 -->
+                        <Border BorderBrush="Gray" BorderThickness="1" Margin="0,5" Height="150">
+                            <Image Source="{Binding OriginalImage}" Stretch="Uniform"/>
+                        </Border>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- 角度方向预设 -->
+                <GroupBox Header="角度方向预设" Margin="0,0,0,10">
+                    <StackPanel>
+                        <Button Content="水平方向 (0°)" Command="{Binding ApplyAnglePresetCommand}" 
+                                CommandParameter="Horizontal" Margin="0,3"/>
+                        <Button Content="垂直方向 (90°)" Command="{Binding ApplyAnglePresetCommand}" 
+                                CommandParameter="Vertical" Margin="0,3"/>
+                        <Button Content="对角线 (45°)" Command="{Binding ApplyAnglePresetCommand}" 
+                                CommandParameter="Diagonal45" Margin="0,3"/>
+                        <Button Content="对角线 (135°)" Command="{Binding ApplyAnglePresetCommand}" 
+                                CommandParameter="Diagonal135" Margin="0,3"/>
+                        <Button Content="所有方向" Command="{Binding ApplyAnglePresetCommand}" 
+                                CommandParameter="AllDirections" Margin="0,3"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- 阈值预设 -->
+                <GroupBox Header="阈值预设" Margin="0,0,0,10">
+                    <StackPanel>
+                        <Button Content="低阈值 (30/90)" Command="{Binding ApplyThresholdPresetCommand}" 
+                                CommandParameter="Low" Margin="0,3"/>
+                        <Button Content="中阈值 (50/150)" Command="{Binding ApplyThresholdPresetCommand}" 
+                                CommandParameter="Medium" Margin="0,3"/>
+                        <Button Content="高阈值 (100/200)" Command="{Binding ApplyThresholdPresetCommand}" 
+                                CommandParameter="High" Margin="0,3"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Canny参数 -->
+                <GroupBox Header="Canny参数" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="低阈值 (Low Threshold):" Margin="0,5,0,2"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Slider Value="{Binding LowThreshold}" Minimum="10" Maximum="200" Width="180" 
+                                    TickFrequency="5" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding LowThreshold, StringFormat={}{0:F0}}" 
+                                       Margin="10,0,0,0" VerticalAlignment="Center" Width="40"/>
+                        </StackPanel>
+
+                        <TextBlock Text="高阈值 (High Threshold):" Margin="0,5,0,2"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Slider Value="{Binding HighThreshold}" Minimum="20" Maximum="300" Width="180" 
+                                    TickFrequency="5" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding HighThreshold, StringFormat={}{0:F0}}" 
+                                       Margin="10,0,0,0" VerticalAlignment="Center" Width="40"/>
+                        </StackPanel>
+
+                        <TextBlock Text="Sobel孔径大小:" Margin="0,5,0,2"/>
+                        <StackPanel Orientation="Horizontal">
+                            <ComboBox SelectedValue="{Binding ApertureSize}" Width="100" Margin="0,3">
+                                <ComboBoxItem Content="3" Tag="3" IsSelected="True"/>
+                                <ComboBoxItem Content="5" Tag="5"/>
+                                <ComboBoxItem Content="7" Tag="7"/>
+                            </ComboBox>
+                            <TextBlock Text="(3推荐)" Margin="10,0,0,0" VerticalAlignment="Center" 
+                                       FontSize="10" Foreground="Gray"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- 方向筛选参数 -->
+                <GroupBox Header="方向筛选参数" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="目标角度 (Target Angle):" Margin="0,5,0,2"/>
+                        <TextBlock Text="0°=水平向右, 90°=垂直向上 (逆时针)" 
+                                   FontSize="10" Foreground="Gray" Margin="0,0,0,3"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Slider Value="{Binding TargetAngle}" Minimum="0" Maximum="360" Width="180" 
+                                    TickFrequency="5" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding TargetAngle, StringFormat={}{0:F0}°}" 
+                                       Margin="10,0,0,0" VerticalAlignment="Center" Width="50"/>
+                        </StackPanel>
+
+                        <TextBlock Text="角度容差 (Tolerance):" Margin="0,10,0,2"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Slider Value="{Binding AngleTolerance}" Minimum="0" Maximum="90" Width="180" 
+                                    TickFrequency="5" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding AngleTolerance, StringFormat={}±{0:F0}°}" 
+                                       Margin="10,0,0,0" VerticalAlignment="Center" Width="50"/>
+                        </StackPanel>
+                        
+                        <Border Background="#F0F0F0" Padding="5" Margin="0,5" CornerRadius="3">
+                            <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#333">
+                                <Run Text="筛选范围: ["/>
+                                <Run Text="{Binding TargetAngle, StringFormat={}{0:F0}, Mode=OneWay}"/>
+                                <Run Text=" - "/>
+                                <Run Text="{Binding AngleTolerance, StringFormat={}{0:F0}, Mode=OneWay}"/>
+                                <Run Text="°, "/>
+                                <Run Text="{Binding TargetAngle, StringFormat={}{0:F0}, Mode=OneWay}"/>
+                                <Run Text=" + "/>
+                                <Run Text="{Binding AngleTolerance, StringFormat={}{0:F0}, Mode=OneWay}"/>
+                                <Run Text="°]"/>
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- 亚像素参数 -->
+                <GroupBox Header="亚像素定位" Margin="0,0,0,10">
+                    <StackPanel>
+                        <CheckBox Content="启用亚像素定位" IsChecked="{Binding UseSubPixel}" Margin="0,5"/>
+                        
+                        <TextBlock Text="搜索窗口大小:" Margin="0,5,0,2"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Slider Value="{Binding SubPixelWinSize}" Minimum="3" Maximum="11" Width="180" 
+                                    TickFrequency="2" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                    IsEnabled="{Binding UseSubPixel}"/>
+                            <TextBlock Text="{Binding SubPixelWinSize}" 
+                                       Margin="10,0,0,0" VerticalAlignment="Center" Width="40"/>
+                        </StackPanel>
+                        <TextBlock Text="奇数值, 推荐5或7" FontSize="10" Foreground="Gray"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- 操作按钮 -->
+                <GroupBox Header="操作" Margin="0,0,0,10">
+                    <StackPanel>
+                        <Button Content="执行边缘检测" Command="{Binding DetectEdgesCommand}" 
+                                IsEnabled="{Binding IsImageLoaded}" Margin="0,5" 
+                                Background="#4CAF50" Foreground="White" Height="40" FontWeight="Bold" FontSize="14"/>
+                        <Button Content="保存结果图像" Command="{Binding SaveResultsCommand}" 
+                                IsEnabled="{Binding IsDetectionComplete}" Margin="0,5" Height="32"/>
+                        <Button Content="清除所有" Command="{Binding ClearAllCommand}" Margin="0,5" Height="32"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- 检测结果统计 -->
+                <GroupBox Header="检测结果" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="{Binding DetectionResultText}" TextWrapping="Wrap" 
+                                   FontFamily="Consolas" FontSize="11" Margin="0,5"/>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 右侧可视化区域 -->
+        <Grid Grid.Column="1" Margin="10,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 上半部分：原始图像和Canny边缘 -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 原始图像 -->
+                <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Margin="0,0,5,5">
+                    <Grid>
+                        <Image Source="{Binding OriginalImage}" Stretch="Uniform"/>
+                        <TextBlock Text="原始图像" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                   Background="#80000000" Foreground="White" Padding="5" FontSize="12" FontWeight="Bold"/>
+                    </Grid>
+                </Border>
+
+                <!-- Canny边缘 -->
+                <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1" Margin="5,0,0,5">
+                    <Grid>
+                        <Image Source="{Binding CannyEdgesImage}" Stretch="Uniform"/>
+                        <TextBlock Text="Canny边缘" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                   Background="#80000000" Foreground="White" Padding="5" FontSize="12" FontWeight="Bold"/>
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Top"
+                                   Background="#80000000" Foreground="Yellow" Padding="5" FontSize="11"
+                                   Text="{Binding TotalEdgePoints, StringFormat={}点数: {0:N0}}"/>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- 下半部分：筛选后的边缘和方向可视化 -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 筛选后的边缘 -->
+                <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Margin="0,5,5,0">
+                    <Grid>
+                        <Image Source="{Binding FilteredEdgesImage}" Stretch="Uniform"/>
+                        <TextBlock HorizontalAlignment="Left" VerticalAlignment="Top"
+                                   Background="#80000000" Foreground="LightGreen" Padding="5" FontSize="12" FontWeight="Bold">
+                            <Run Text="筛选后边缘 ("/>
+                            <Run Text="{Binding TargetAngle, StringFormat={}{0:F0}°}"/>
+                            <Run Text=" ±"/>
+                            <Run Text="{Binding AngleTolerance, StringFormat={}{0:F0}°}"/>
+                            <Run Text=")"/>
+                        </TextBlock>
+                        <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Background="#80000000" Margin="5">
+                            <TextBlock Foreground="Yellow" Padding="3" FontSize="11"
+                                       Text="{Binding FilteredEdgePoints, StringFormat={}点数: {0:N0}}"/>
+                            <TextBlock Foreground="Cyan" Padding="3" FontSize="11"
+                                       Text="{Binding FilterRatio, StringFormat={}保留: {0:F1}%}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- 方向可视化 -->
+                <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1" Margin="5,5,0,0">
+                    <Grid>
+                        <Image Source="{Binding DirectionVisImage}" Stretch="Uniform"/>
+                        <TextBlock Text="梯度方向可视化" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                   Background="#80000000" Foreground="White" Padding="5" FontSize="12" FontWeight="Bold"/>
+                        <TextBlock HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                   Background="#80000000" Foreground="White" Padding="5" FontSize="10" TextWrapping="Wrap"
+                                   Text="颜色表示梯度方向&#x0a;(色调=角度, 亮度=幅值)"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

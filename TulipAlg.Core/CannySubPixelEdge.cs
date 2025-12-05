@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -150,6 +150,7 @@ namespace TulipAlg.Core
         private static extern bool CannySubPixelEdge_DetectEdges(
             IntPtr instance,
             double[] image,
+            IntPtr mask,
             int width,
             int height,
             double sigma,
@@ -165,6 +166,7 @@ namespace TulipAlg.Core
         private static extern bool CannySubPixelEdge_DetectEdgesFromBytes(
             IntPtr instance,
             IntPtr image,
+            IntPtr mask,
             int width,
             int height,
             double sigma,
@@ -209,8 +211,8 @@ namespace TulipAlg.Core
         /// <param name="th_h">Canny高阈值</param>
         /// <param name="th_l">Canny低阈值</param>
         /// <returns>边缘检测结果</returns>
-        public CannyEdgeResult? DetectEdges(double[] image, int width, int height,
-                                            double sigma, double th_h, double th_l)
+        public CannyEdgeResult? DetectEdges(double[] image, byte[]? mask, int width, int height,
+                            double sigma, double th_h, double th_l)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(CannySubPixelEdge));
@@ -224,18 +226,43 @@ namespace TulipAlg.Core
 
             try
             {
-                bool success = CannySubPixelEdge_DetectEdges(
-                    _nativeInstance, image, width, height, sigma, th_h, th_l,
-                    out x_ptr, out y_ptr, out curve_limits_ptr,
-                    out int totalPoints, out int curveCount);
-
-                if (!success)
+                if (mask == null)
                 {
-                    string? error = GetLastError();
-                    throw new Exception($"边缘检测失败：{error}");
-                }
+                    bool success = CannySubPixelEdge_DetectEdges(
+                        _nativeInstance, image, IntPtr.Zero, width, height, sigma, th_h, th_l,
+                        out x_ptr, out y_ptr, out curve_limits_ptr,
+                        out int totalPoints, out int curveCount);
 
-                return ParseResult(x_ptr, y_ptr, curve_limits_ptr, totalPoints, curveCount, width, height);
+                    if (!success)
+                    {
+                        string? error = GetLastError();
+                        throw new Exception($"边缘检测失败：{error}");
+                    }
+
+                    return ParseResult(x_ptr, y_ptr, curve_limits_ptr, totalPoints, curveCount, width, height);
+                }
+                else
+                {
+                    unsafe
+                    {
+                        fixed (byte* maskPtr = mask)
+                        {
+                            IntPtr mptr = (IntPtr)maskPtr;
+                            bool success = CannySubPixelEdge_DetectEdges(
+                                _nativeInstance, image, mptr, width, height, sigma, th_h, th_l,
+                                out x_ptr, out y_ptr, out curve_limits_ptr,
+                                out int totalPoints, out int curveCount);
+
+                            if (!success)
+                            {
+                                string? error = GetLastError();
+                                throw new Exception($"边缘检测失败：{error}");
+                            }
+
+                            return ParseResult(x_ptr, y_ptr, curve_limits_ptr, totalPoints, curveCount, width, height);
+                        }
+                    }
+                }
             }
             finally
             {
@@ -256,8 +283,8 @@ namespace TulipAlg.Core
         /// <param name="th_h">Canny高阈值</param>
         /// <param name="th_l">Canny低阈值</param>
         /// <returns>边缘检测结果</returns>
-        public CannyEdgeResult? DetectEdgesFromBytes(Span<byte> image, int width, int height,
-                                                     double sigma, double th_h, double th_l)
+        public CannyEdgeResult? DetectEdgesFromBytes(Span<byte> image, Span<byte> mask, int width, int height,
+                                 double sigma, double th_h, double th_l)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(CannySubPixelEdge));
@@ -275,18 +302,43 @@ namespace TulipAlg.Core
                 {
                     fixed (byte* imagePtr = image)
                     {
-                        bool success = CannySubPixelEdge_DetectEdgesFromBytes(
-                            _nativeInstance, (IntPtr)imagePtr, width, height, sigma, th_h, th_l,
-                            out x_ptr, out y_ptr, out curve_limits_ptr,
-                            out int totalPoints, out int curveCount);
-
-                        if (!success)
+                        if (mask.IsEmpty)
                         {
-                            string? error = GetLastError();
-                            throw new Exception($"边缘检测失败：{error}");
-                        }
+                            bool success = CannySubPixelEdge_DetectEdgesFromBytes(
+                                _nativeInstance, (IntPtr)imagePtr, IntPtr.Zero, width, height, sigma, th_h, th_l,
+                                out x_ptr, out y_ptr, out curve_limits_ptr,
+                                out int totalPoints, out int curveCount);
 
-                        return ParseResult(x_ptr, y_ptr, curve_limits_ptr, totalPoints, curveCount, width, height);
+                            if (!success)
+                            {
+                                string? error = GetLastError();
+                                throw new Exception($"边缘检测失败：{error}");
+                            }
+
+                            return ParseResult(x_ptr, y_ptr, curve_limits_ptr, totalPoints, curveCount, width, height);
+                        }
+                        else
+                        {
+                            unsafe
+                            {
+                                fixed (byte* maskPtr = mask)
+                                {
+                                    IntPtr mptr = (IntPtr)maskPtr;
+                                    bool success = CannySubPixelEdge_DetectEdgesFromBytes(
+                                        _nativeInstance, (IntPtr)imagePtr, mptr, width, height, sigma, th_h, th_l,
+                                        out x_ptr, out y_ptr, out curve_limits_ptr,
+                                        out int totalPoints, out int curveCount);
+
+                                    if (!success)
+                                    {
+                                        string? error = GetLastError();
+                                        throw new Exception($"边缘检测失败：{error}");
+                                    }
+
+                                    return ParseResult(x_ptr, y_ptr, curve_limits_ptr, totalPoints, curveCount, width, height);
+                                }
+                            }
+                        }
                     }
                 }
             }

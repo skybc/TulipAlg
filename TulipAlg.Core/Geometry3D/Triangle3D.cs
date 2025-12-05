@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace TulipAlg.Core.Geometry3D
 {
@@ -334,7 +334,7 @@ namespace TulipAlg.Core.Geometry3D
             out double v)
         {
             const double epsilon = 1e-10;
-
+            
             Vector3 edge1 = V1 - V0;
             Vector3 edge2 = V2 - V0;
 

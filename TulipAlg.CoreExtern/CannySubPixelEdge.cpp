@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------------
+﻿/*----------------------------------------------------------------------------
   CannySubPixelEdge - C++ wrapper for Canny/Devernay's sub-pixel edge detector
   
   Based on the implementation by Rafael Grompone von Gioi and Gregory Randall
@@ -180,7 +180,8 @@ namespace TulipAlg {
 
     // 计算亚像素边缘点
     void CannySubPixelEdge::ComputeEdgePoints(double* Ex, double* Ey, const double* modG,
-                                             const double* Gx, const double* Gy, int X, int Y) {
+                                             const double* Gx, const double* Gy, int X, int Y,
+                                             const unsigned char* mask) {
         if (Ex == nullptr || Ey == nullptr || modG == nullptr || 
             Gx == nullptr || Gy == nullptr) {
             SetError("compute_edge_points: invalid input");
@@ -195,6 +196,10 @@ namespace TulipAlg {
         // 探索内部像素（保留2像素边距）
         for (int x = 2; x < (X - 2); x++) {
             for (int y = 2; y < (Y - 2); y++) {
+                // 如果提供了掩膜并且当前像素为0，则跳过该像素的边缘检测
+                if (mask != nullptr && mask[x + y * X] == 0) {
+                    continue;
+                }
                 int Dx = 0;
                 int Dy = 0;
                 double mod = modG[x + y * X];
@@ -450,7 +455,7 @@ namespace TulipAlg {
     }
 
     // 主检测函数
-    bool CannySubPixelEdge::DetectEdges(const double* image, int width, int height,
+    bool CannySubPixelEdge::DetectEdges(const double* image, const unsigned char* mask, int width, int height,
                                        double sigma, double th_h, double th_l,
                                        CannyEdgeResult& result) {
         if (image == nullptr || width <= 0 || height <= 0) {
@@ -499,7 +504,8 @@ namespace TulipAlg {
         }
 
         // 计算边缘点
-        ComputeEdgePoints(Ex, Ey, modG, Gx, Gy, width, height);
+        // 将可选掩膜传入 ComputeEdgePoints：如果 mask 为 nullptr，内部将兼容为处理全部像素
+        ComputeEdgePoints(Ex, Ey, modG, Gx, Gy, width, height, mask);
 
         // 链接边缘点
         ChainEdgePoints(next, prev, Ex, Ey, Gx, Gy, width, height);
@@ -558,7 +564,7 @@ namespace TulipAlg {
 
     // 从字节图像检测边缘
     bool CannySubPixelEdge::DetectEdgesFromBytes(const unsigned char* image, 
-                                                 int width, int height,
+                                                 const unsigned char* mask, int width, int height,
                                                  double sigma, double th_h, double th_l,
                                                  CannyEdgeResult& result) {
         if (image == nullptr || width <= 0 || height <= 0) {
@@ -576,7 +582,8 @@ namespace TulipAlg {
             doubleImage[i] = (double)image[i];
         }
 
-        bool success = DetectEdges(doubleImage, width, height, sigma, th_h, th_l, result);
+        // 传入 mask（可能为 nullptr）
+        bool success = DetectEdges(doubleImage, mask, width, height, sigma, th_h, th_l, result);
         
         free(doubleImage);
         return success;

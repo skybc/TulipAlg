@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace TulipAlg.Core.Geometry3D
 {
@@ -14,7 +14,7 @@ namespace TulipAlg.Core.Geometry3D
     /// - 法向量
     /// - 方向
     /// </summary>
-    public struct Vector3 : IEquatable<Vector3>
+    public struct Vector3 :  IEquatable<Vector3>
     {
         #region Properties
 

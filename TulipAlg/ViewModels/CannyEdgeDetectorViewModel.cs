@@ -126,7 +126,7 @@ namespace TulipAlg.ViewModels
 
                 // 执行检测
                 _edgeDetectionResult = detector.DetectEdgesFromBytes(
-                    _currentImageData,
+                    _currentImageData,null,
                     _imageWidth,
                     _imageHeight,
                     Sigma,

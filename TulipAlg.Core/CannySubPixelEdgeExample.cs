@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace TulipAlg.Core
 {
@@ -25,7 +25,7 @@ namespace TulipAlg.Core
                 // th_h: 高阈值
                 // th_l: 低阈值
                 var result = detector.DetectEdgesFromBytes(
-                    image, width, height,
+                    image, null, width, height,
                     sigma: 1.0,
                     th_h: 20.0,
                     th_l: 10.0);
@@ -63,10 +63,10 @@ namespace TulipAlg.Core
         {
             int width = 100;
             int height = 100;
-            
+
             // 创建double数组图像
             double[] image = new double[width * height];
-            
+
             // 创建一个简单的渐变图像
             for (int y = 0; y < height; y++)
             {
@@ -79,7 +79,7 @@ namespace TulipAlg.Core
             using (var detector = new CannySubPixelEdge())
             {
                 var result = detector.DetectEdges(
-                    image, width, height,
+                    image, null, width, height,
                     sigma: 0.0,   // 不进行高斯滤波
                     th_h: 15.0,
                     th_l: 5.0);
@@ -103,7 +103,7 @@ namespace TulipAlg.Core
             using (var detector = new CannySubPixelEdge())
             {
                 var result = detector.DetectEdgesFromBytes(
-                    image, width, height,
+                    image, null, width, height,
                     sigma: 1.0,
                     th_h: 20.0,
                     th_l: 10.0);
@@ -153,7 +153,7 @@ namespace TulipAlg.Core
                 foreach (var param in parameterSets)
                 {
                     var result = detector.DetectEdgesFromBytes(
-                        image, width, height,
+                        image, null, width, height,
                         param.sigma, param.th_h, param.th_l);
 
                     if (result != null)

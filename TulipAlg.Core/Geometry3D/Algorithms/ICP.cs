@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -204,6 +204,7 @@ namespace TulipAlg.Core.Geometry3D.Algorithms
         private (Matrix3x3 rotation, Vector3 translation) EstimateRigidTransform(
             List<(Point3D source, Point3D target)> correspondences)
         {
+             
             int n = correspondences.Count;
 
             // 1. 计算质心
@@ -216,7 +217,7 @@ namespace TulipAlg.Core.Geometry3D.Algorithms
 
             // 3. 构建协方差矩阵 H = Σ sᵢ · tᵢᵀ
             Matrix3x3 H = Matrix3x3.Zero;
-
+           
             for (int i = 0; i < n; i++)
             {
                 Vector3 s = sourceCentered[i];
@@ -419,7 +420,7 @@ namespace TulipAlg.Core.Geometry3D.Algorithms
         public Vector3 Transform(Vector3 v)
         {
             return new Vector3(
-                M00 * v.X + M01 * v.Y + M02 * v.Z,
+               (float)( M00 * v.X + M01 * v.Y + M02 * v.Z),
                 M10 * v.X + M11 * v.Y + M12 * v.Z,
                 M20 * v.X + M21 * v.Y + M22 * v.Z
             );

@@ -36,6 +36,7 @@ extern "C" CANNY_EXPORT void CannySubPixelEdge_Destroy(void* instance)
 extern "C" CANNY_EXPORT bool CannySubPixelEdge_DetectEdges(
     void* instance,
     const double* image,
+    const unsigned char* mask,
     int width,
     int height,
     double sigma,
@@ -55,7 +56,7 @@ extern "C" CANNY_EXPORT bool CannySubPixelEdge_DetectEdges(
         CannySubPixelEdge* detector = static_cast<CannySubPixelEdge*>(instance);
         CannyEdgeResult result;
 
-        if (!detector->DetectEdges(image, width, height, sigma, th_h, th_l, result))
+        if (!detector->DetectEdges(image, mask, width, height, sigma, th_h, th_l, result))
             return false;
 
         // 计算总点数
@@ -117,6 +118,7 @@ extern "C" CANNY_EXPORT bool CannySubPixelEdge_DetectEdges(
 extern "C" CANNY_EXPORT bool CannySubPixelEdge_DetectEdgesFromBytes(
     void* instance,
     const unsigned char* image,
+    const unsigned char* mask,
     int width,
     int height,
     double sigma,
@@ -136,7 +138,7 @@ extern "C" CANNY_EXPORT bool CannySubPixelEdge_DetectEdgesFromBytes(
         CannySubPixelEdge* detector = static_cast<CannySubPixelEdge*>(instance);
         CannyEdgeResult result;
 
-        if (!detector->DetectEdgesFromBytes(image, width, height, sigma, th_h, th_l, result))
+        if (!detector->DetectEdgesFromBytes(image, mask, width, height, sigma, th_h, th_l, result))
             return false;
 
         // 计算总点数

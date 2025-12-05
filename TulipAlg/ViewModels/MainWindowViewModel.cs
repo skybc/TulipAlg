@@ -58,7 +58,8 @@ namespace TulipAlg.ViewModels
                 Children = new ObservableCollection<MenuItem>
                 {
                     new MenuItem { Header = "Canny亚像素边缘检测", ViewType = typeof(CannyEdgeDetectorView) },
-                    new MenuItem { Header = "OpenCV Canny边缘检测", ViewType = typeof(OpenCvCannyView) }
+                    new MenuItem { Header = "OpenCV Canny边缘检测", ViewType = typeof(OpenCvCannyView) },
+                    new MenuItem { Header = "方向筛选Canny边缘检测", ViewType = typeof(DirectionalCannyView) }
                 }
             };
 
